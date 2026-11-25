@@ -1,24 +1,23 @@
+"""Import bus timetables from PDF files into Supabase.
+
+Usage:
+  python -m gmina_sync.transport.pdf_to_csv_upload data/pdf             # preview, no DB write
+  python -m gmina_sync.transport.pdf_to_csv_upload data/pdf --wyslij    # write to Supabase
+
+Requires the SUPABASE_DB_URL environment variable.
+"""
+
 import csv
 import os
 import pathlib
 import sys
 
+from gmina_sync.db import load_stops, connect
 from gmina_sync.transport.match import kierunek_slupka, dopasuj
 from gmina_sync.transport.parse import parse_pdf
 
 OPERATOR = "GZK Rędziny"
 WYNIK_CSV = "rozklady_wynik.csv"
-
-
-def load_stops(conn):
-    with conn.cursor() as cur:
-        cur.execute("""
-            SELECT b.id, b.name, l.name, d.name
-            FROM bus_stop b
-            JOIN locality l ON l.id = b.locality_id
-            JOIN direction d ON d.id = b.direction_id
-        """)
-        return [{"id": i, "name": n, "loc": l, "dir": d} for i, n, l, d in cur.fetchall()]
 
 
 def main():
@@ -32,8 +31,7 @@ def main():
     conn = None
     stops = []
     if wyslij or os.environ.get("SUPABASE_DB_URL"):
-        import psycopg2
-        conn = psycopg2.connect(os.environ["SUPABASE_DB_URL"])
+        conn = connect()
         stops = load_stops(conn)
         print(f"Słupków w bazie: {len(stops)}")
     else:
