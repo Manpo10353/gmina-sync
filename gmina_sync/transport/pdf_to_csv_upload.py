@@ -1,46 +1,13 @@
 import csv
 import os
 import pathlib
-
 import sys
+
+from gmina_sync.transport.match import kierunek_slupka, dopasuj
 from gmina_sync.transport.parse import parse_pdf
 
 OPERATOR = "GZK Rędziny"
 WYNIK_CSV = "rozklady_wynik.csv"
-
-ALIASY = {
-    "CZĘSTOCHOWA TENISOWA": ("Częstochowa", "Strefa"),
-    "MARIANKA RĘDZIŃSKA": ("Marianka Rędzińska", "Marianka"),
-    "MARIANKA RĘDZIŃSKA I": ("Marianka Rędzińska", "Marianka I"),
-    "MARIANKA RĘDZIŃSKA II": ("Marianka Rędzińska", "Marianka II"),
-    "RUDNIKI NOWE I": ("Rudniki", "Nowe 1"),
-    "RUDNIKI NOWE II": ("Rudniki", "Nowe 2"),
-    "RUDNIKI NOWE III": ("Rudniki", "Nowe 3"),
-    "KAROLINA I": ("Karolina", "Karolina 1"),
-    "RĘDZINY WOLNOŚCI (GÓRKA)": ("Rędziny", "Górka"),
-    "RĘDZINY OSIEDLE (UL. WESOŁA)": ("Rędziny", "Osiedle ul.Wesoła"),
-    "RĘDZINY UL. WESOŁA": ("Rędziny", "Wesoła"),
-    "CZĘSTOCHOWA PL. DASZYŃSKIEGO": ("Częstochowa", "Plac Daszyńskiego"),
-    "LATOSÓWKA SPACEROWA": ("Konin", "Latosówka Spacerowa"),
-}
-
-
-def kierunek_slupka(kierunek_pdf):
-    """Reguła: jeśli w PDF-ie jest CZĘSTOCHOWA, słupek jest w kierunku Częstochowa, inaczej Rędziny."""
-    return "Częstochowa" if "CZĘSTOCHOWA" in kierunek_pdf.upper() else "Rędziny"
-
-
-def dopasuj(naglowek, kier_bazy, stops):
-    kier = kier_bazy.upper()
-    if naglowek in ALIASY:
-        loc, nazwa = ALIASY[naglowek]
-        return [s for s in stops
-                if s["loc"].upper() == loc.upper()
-                and s["name"].upper() == nazwa.upper()
-                and s["dir"].upper() == kier]
-    return [s for s in stops
-            if s["dir"].upper() == kier
-            and naglowek in ((s["loc"] + " " + s["name"]).upper(), s["name"].upper())]
 
 
 def load_stops(conn):

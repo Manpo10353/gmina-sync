@@ -7,6 +7,7 @@ TOKEN = re.compile(r"(\d{2})\s*([A-Za-z\-]*\*?)")
 def parse_cell(text):
     return TOKEN.findall(text.replace("\n", " "))
 
+
 def parse_pdf(path):
     rows = []
     with pdfplumber.open(path) as pdf:
@@ -24,8 +25,7 @@ def parse_pdf(path):
                     for col, cell in enumerate(row[1:5]):
                         if not cell:
                             continue
-                        for minute, code in TOKEN.findall(cell.replace("\n", " ")):
-                            rows.append({
+                        for minute, code in parse_cell(cell):                            rows.append({
                                 "przystanek": stop,
                                 "kierunek": direction,
                                 "day_type": DAY_COLS[col],
