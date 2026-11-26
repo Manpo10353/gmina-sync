@@ -13,12 +13,12 @@ import pathlib
 import sys
 
 from gmina_sync.db import connect, load_stops
-from gmina_sync.transport.match import dopasuj, kierunek_slupka
+from gmina_sync.transport.match import match_stops, stop_direction
 from gmina_sync.transport.parse import parse_pdf
 from gmina_sync.transport.upload import dedupe_departures, upload_departures
 
 RESULT_CSV = "rozklady_wynik.csv"
-CSV_FIELDS = ["bus_stop_id", "przystanek", "kierunek", "day_type", "godzina", "kod"]
+CSV_FIELDS = ["bus_stop_id", "stop", "direction", "day_type", "time", "code"]
 
 
 def collect_rows(pdfs, stops):
@@ -35,9 +35,9 @@ def collect_rows(pdfs, stops):
             continue
         stop_id = ""
         if stops:
-            header = parsed[0]["przystanek"]
-            db_direction = kierunek_slupka(parsed[0]["kierunek"])
-            matches = dopasuj(header, db_direction, stops)
+            header = parsed[0]["stop"]
+            db_direction = stop_direction(parsed[0]["direction"])
+            matches = match_stops(header, db_direction, stops)
             if len(matches) != 1:
                 unmatched.append((pdf.name, f"{header} / {db_direction}: dopasowań {len(matches)}"))
                 continue
@@ -63,7 +63,7 @@ def print_report(unmatched, stops, rows):
     if stops:
         used = {r["bus_stop_id"] for r in rows}
         without = [s for s in stops if s["id"] not in used]
-        print(f"\nSłupki bez rozkładu ({len(without)}):")
+        print(f"\nPrzystanki bez rozkładu ({len(without)}):")
         for s in without:
             print(f" - {s['loc']} | {s['name']} | {s['dir']}")
 
@@ -72,7 +72,7 @@ def main():
     if len(sys.argv) < 2:
         sys.exit(__doc__)
     folder = pathlib.Path(sys.argv[1])
-    send = "--wyslij" in sys.argv
+    send = "--upload" in sys.argv
     pdfs = sorted(folder.glob("*.pdf"))
     print(f"Plików PDF: {len(pdfs)}")
 
@@ -81,7 +81,7 @@ def main():
     if send or os.environ.get("DATABASE_URL"):
         conn = connect()
         stops = load_stops(conn)
-        print(f"Słupków w bazie: {len(stops)}")
+        print(f"Przystanków w bazie: {len(stops)}")
     else:
         print("Brak DATABASE_URL - dopasowanie pominięte, tylko parsowanie.")
 
@@ -92,7 +92,7 @@ def main():
 
     if send and conn is not None:
         if unmatched:
-            sys.exit("Najpierw napraw niedopasowane pliki, potem uruchom z --wyslij.")
+            sys.exit("Najpierw napraw niedopasowane pliki, potem uruchom z --upload.")
         unique, messages = dedupe_departures(rows)
         for m in messages:
             print(m)

@@ -15,15 +15,15 @@ def dedupe_departures(rows):
     unique = []
     messages = []
     for r in rows:
-        key = (r["bus_stop_id"], r["kod"], r["day_type"], r["godzina"])
+        key = (r["bus_stop_id"], r["code"], r["day_type"], r["time"])
         if key in seen:
-            starred = r["kod"] + "*"
-            starred_key = (r["bus_stop_id"], starred, r["day_type"], r["godzina"])
+            starred = r["code"] + "*"
+            starred_key = (r["bus_stop_id"], starred, r["day_type"], r["time"])
             if starred_key in seen:
                 messages.append(f"Skipped duplicate: {key}")
                 continue
             messages.append(f"Marked duplicate with star: {key} -> {starred}")
-            r = {**r, "kod": starred}
+            r = {**r, "code": starred}
             key = starred_key
         seen.add(key)
         unique.append(r)
@@ -32,8 +32,8 @@ def dedupe_departures(rows):
 
 def upload_departures(conn, rows):
     """Replace departures of the affected stops in one transaction. Returns the count."""
-    rows = [r for r in rows if r["kod"]]
-    codes = sorted({r["kod"] for r in rows})
+    rows = [r for r in rows if r["code"]]
+    codes = sorted({r["code"] for r in rows})
     stop_ids = sorted({r["bus_stop_id"] for r in rows})
     with conn:
         with conn.cursor() as cur:
@@ -46,7 +46,7 @@ def upload_departures(conn, rows):
             line_ids = dict(cur.fetchall())
 
             cur.execute("DELETE FROM departure WHERE bus_stop_id = ANY(%s)", (stop_ids,))
-            data = [(r["bus_stop_id"], line_ids[r["kod"]], r["day_type"], r["godzina"]) for r in rows]
+            data = [(r["bus_stop_id"], line_ids[r["code"]], r["day_type"], r["time"]) for r in rows]
             execute_batch(
                 cur,
                 "INSERT INTO departure (bus_stop_id, bus_line_id, day_type, departure_time) "

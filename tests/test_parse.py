@@ -4,7 +4,7 @@ from gmina_sync.transport.parse import parse_cell, parse_pdf
 def test_parse_pdf_returns_departures():
     rows = parse_pdf("tests/samples/1.-Czestochowa-Pilsudskiego.pdf")
     assert len(rows) > 0
-    assert set(rows[0]) == {"przystanek", "kierunek", "day_type", "godzina", "kod"}
+    assert set(rows[0]) == {"stop", "direction", "day_type", "time", "code"}
 
 
 def test_parse_cell_with_codes():

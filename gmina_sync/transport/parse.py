@@ -25,11 +25,12 @@ def parse_pdf(path):
                     for col, cell in enumerate(row[1:5]):
                         if not cell:
                             continue
-                        for minute, code in parse_cell(cell):                            rows.append({
-                                "przystanek": stop,
-                                "kierunek": direction,
+                        for minute, code in parse_cell(cell):
+                            rows.append({
+                                "stop": stop,
+                                "direction": direction,
                                 "day_type": DAY_COLS[col],
-                                "godzina": f"{hour:02d}:{int(minute):02d}",
-                                "kod": code,
+                                "time": f"{hour:02d}:{int(minute):02d}",
+                                "code": code,
                             })
     return rows

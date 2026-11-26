@@ -7,10 +7,10 @@ load_dotenv(override=True)
 
 
 def connect():
-    """Open a connection to Supabase using SUPABASE_DB_URL."""
+    """Open a connection to Supabase using DATABASE_URL."""
     DATABASE_URL = os.getenv("DATABASE_URL")
     if not DATABASE_URL:
-        raise SystemExit("Set the SUPABASE_DB_URL environment variable.")
+        raise SystemExit("Set the DATABASE_URL environment variable.")
     return psycopg2.connect(DATABASE_URL)
 
 

@@ -22,9 +22,9 @@ def test_collect_rows_reports_unmatched_file():
 
 def test_write_csv_writes_header_and_rows(tmp_path):
     path = tmp_path / "out.csv"
-    rows = [{"bus_stop_id": 1, "przystanek": "A", "kierunek": "B",
-             "day_type": "saturday", "godzina": "06:15", "kod": "RL"}]
+    rows = [{"bus_stop_id": 1, "stop": "A", "direction": "B",
+             "day_type": "saturday", "time": "06:15", "code": "RL"}]
     write_csv(rows, path)
     lines = path.read_text(encoding="utf-8-sig").splitlines()
-    assert lines[0] == "bus_stop_id;przystanek;kierunek;day_type;godzina;kod"
+    assert lines[0] == "bus_stop_id;stop;direction;day_type;time;code"
     assert lines[1] == "1;A;B;saturday;06:15;RL"

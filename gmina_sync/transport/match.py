@@ -15,21 +15,21 @@ ALIASY = {
 }
 
 
-def kierunek_slupka(kierunek_pdf):
+def stop_direction(direction_pdf):
     """Direction is 'Częstochowa' if the PDF says so, otherwise 'Rędziny'."""
-    return "Częstochowa" if "CZĘSTOCHOWA" in kierunek_pdf.upper() else "Rędziny"
+    return "Częstochowa" if "CZĘSTOCHOWA" in direction_pdf.upper() else "Rędziny"
 
 
-def dopasuj(naglowek, kier_bazy, stops):
+def match_stops(header, db_direction, stops):
     """Return a list of database stops matching a PDF header """
-    kier = kier_bazy.upper()
-    naglowek = naglowek.upper()
-    if naglowek in ALIASY:
-        loc, nazwa = ALIASY[naglowek]
+    direction = db_direction.upper()
+    header = header.upper()
+    if header in ALIASY:
+        loc, name = ALIASY[header]
         return [s for s in stops
                 if s["loc"].upper() == loc.upper()
-                and s["name"].upper() == nazwa.upper()
-                and s["dir"].upper() == kier]
+                and s["name"].upper() == name.upper()
+                and s["dir"].upper() == direction]
     return [s for s in stops
-            if s["dir"].upper() == kier
-            and naglowek in ((s["loc"] + " " + s["name"]).upper(), s["name"].upper())]
+            if s["dir"].upper() == direction
+            and header in ((s["loc"] + " " + s["name"]).upper(), s["name"].upper())]
